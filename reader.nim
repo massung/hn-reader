@@ -119,7 +119,12 @@ proc parseCmd[T: enum](s: string, def: T): T =
 
 ## Open a story to its URL link or comments page
 proc openStory(opts: iterator(): string, comments: bool=false) =
-  stories[opts().parseInt() - 1].open(comments=comments)
+  try:
+    stories[opts().parseInt() - 1].open(comments=comments)
+  except ValueError:
+    warn("Invalid story index!")
+  except IndexError:
+    warn("Invalid story index!")
 
 ## Load stories
 proc loadStories(opts: iterator(): string) =
