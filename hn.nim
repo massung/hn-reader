@@ -141,6 +141,9 @@ proc hnGetStories*(get: Get, progress: proc(n, m: int) {.gcsafe.}=nil): Future[s
     # create a list of all the futures
     futures.add(f)
   
+  # send an initial progress update
+  progress(0, futures.high + 1)
+
   # wait for all the stories to finish, then filter them
   var stories = await all(futures)
 
