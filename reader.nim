@@ -61,9 +61,11 @@ proc resetView() =
     for i, story in stories.pairs:
       yield (story, i)
 
+const progressBar = '#'.repeat(50)
+
 ## Display a simple progress bar growing
-proc showProgress(n, m: int) =
-  let arrow = '#'.repeat((n * 50 / m).int)
+proc showProgress(n, m: int) {.gcsafe.} =
+  let arrow = progressBar[0..<(n * 50 / m).int]
 
   write(stdout, &"Downloading stories from HN [{arrow:<50}] {n}/{m}\r")
 

@@ -6,6 +6,7 @@
 
 import algorithm
 import asyncdispatch
+import asyncfutures
 import browsers
 import httpclient
 import json
@@ -122,18 +123,23 @@ proc hnGetStory*(id: int64): Future[Option[Story]] {.async.} =
     return some(json.Story)
 
 ## Downloads a list of stories in parallel given their IDs
-proc hnGetStories*(get: Get, progress: proc(n, m: int)=nil): Future[seq[Story]] {.async.} =
+proc hnGetStories*(get: Get, progress: proc(n, m: int) {.gcsafe.}=nil): Future[seq[Story]] {.async.} =
   var futures = newSeq[Future[Option[Story]]]()
+  var n = 0
 
   # download each story
   for id in await hnGetStoryIds(get):
-    futures.add(hnGetStory(id))
-  
-  # show progress
-  for n in 0..futures.high:
-    if not progress.isNil:
-      progress(n, futures.high + 1) 
-    yield futures[n]
+    var f = hnGetStory(id)
+
+    # when done, update the progress
+    f.callback = proc() =
+      n += 1
+      
+      if not progress.isNil:
+        progress(n, futures.high + 1)
+    
+    # create a list of all the futures
+    futures.add(f)
   
   # wait for all the stories to finish, then filter them
   var stories = await all(futures)

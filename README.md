@@ -7,7 +7,7 @@ A simple, [Hacker News][hn] story reader, written in [Nim][nim] for the console.
 After cloning, assuming you have [Nim][nim] installed, compiling should be as simple as running:
 
 ```bash
-$ nim c -d:ssl --threads:on reader.nim
+$ ./build.sh  # build.cmd on Windows
 ```
 
 This will leave you with an executable `reader` app (`reader.exe` on Windows) that can then be run:
