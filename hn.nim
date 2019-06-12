@@ -20,19 +20,12 @@ type
 
 type
   Get* = enum
-    topstories
-    newstories
-    beststories
-    showstories
-    askstories
+    topstories, newstories, beststories, showstories, askstories
 
   Sort* = enum
-    byrank
-    bytime
-    byscore
-    bycomments
+    byrank, bytime, byscore, bycomments
 
-let api = "https://hacker-news.firebaseio.com/v0"
+const api = "https://hacker-news.firebaseio.com/v0"
 
 ## Get the ID of a story
 proc id*(story: Story): int64 =
