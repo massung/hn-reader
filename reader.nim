@@ -164,7 +164,7 @@ proc exec(opts: iterator (): string) =
   of open: openStory(opts, comments=false)
   of read: openStory(opts, comments=true)
   of next: echoStories()
-  of quit: system.quit()
+  of quit: quit()
 
 #
 # Run program
