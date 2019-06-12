@@ -126,10 +126,6 @@ proc hnGetStory*(id: int64): Future[Option[Story]] {.async.} =
 proc hnGetStories*(get: Get, progress: proc(n, m: int) {.gcsafe.}=nil): Future[seq[Story]] {.async.} =
   var futures = newSeq[Future[Option[Story]]]()
   var n = 0
-  
-  # send an initial progress update
-  if not progress.isNil:
-    progress(0, futures.high + 1)
 
   # download each story
   for id in await hnGetStoryIds(get):
@@ -144,6 +140,10 @@ proc hnGetStories*(get: Get, progress: proc(n, m: int) {.gcsafe.}=nil): Future[s
     
     # create a list of all the futures
     futures.add(f)
+
+  # send an initial progress update
+  if not progress.isNil:
+    progress(0, futures.high + 1)
 
   # wait for all the stories to finish, then filter them
   var stories = await all(futures)
