@@ -115,7 +115,7 @@ proc prompt(): string =
 proc parseCmd[T: enum](s: string, def: T): T =
   for e in low(T)..high(T):
     let n = min(high(s), high($e))
-    
+
     if cmpIgnoreCase(s, ($e)[..n]) == 0:
       return e
 
@@ -150,10 +150,12 @@ proc sortStories(opts: iterator(): string) =
   echoStories()
 
 proc findStories(opts: iterator(): string) =
-  let t = unicode.toLower(opts())
+  let terms = unicode.split(opts()).map(proc (s: string): string = unicode.toLower(s))
   
-  # drop any stories not matching the given text
-  stories.keepIf(proc (s: Story): bool = unicode.toLower(s.title).contains(t))
+  # keep stories that match any of the terms
+  stories.keepIf(proc (s: Story): bool = 
+    terms.any(proc (t: string): bool = unicode.toLower(s.title).contains(t))
+  )
 
   # reset and echo
   resetView()
