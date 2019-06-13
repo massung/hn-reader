@@ -114,7 +114,9 @@ proc prompt(): string =
 ## Parse a string -> an enum, but allow for shortened matches
 proc parseCmd[T: enum](s: string, def: T): T =
   for e in low(T)..high(T):
-    if cmpIgnoreCase(s, ($e)[..high(s)]) == 0:
+    let n = min(high(s), high($e))
+    
+    if cmpIgnoreCase(s, ($e)[..n]) == 0:
       return e
 
   # indicate that it was unknown, using something else instead
