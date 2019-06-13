@@ -145,7 +145,7 @@ proc hnGetStories*(get: Get, progress: proc(n, m: int) {.gcsafe.}=nil): Future[s
   if not progress.isNil:
     progress(0, futures.high + 1)
 
-  # wait for all the stories to finish, then filter them
+  # wait for all the stories to finish
   var stories = await all(futures)
 
   # remove any dead stories (none = dead by default)
