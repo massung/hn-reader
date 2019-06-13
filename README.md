@@ -38,6 +38,8 @@ Any command and argument can be shortened as low as a single character (e.g. `lo
 
 You can reload the list of stories at any time, sort them, search for a given topic through the [Hacker News][hn] history, paginate (`next`), or `open` them for in your default browser.
 
+![screencast](screenshot.gif)
+
 # fin.
 
 Enjoy!
