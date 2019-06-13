@@ -19,6 +19,7 @@ import sequtils
 import strformat
 import strutils
 import terminal
+import unicode
 
 type
   ReaderCmd = enum
@@ -94,11 +95,15 @@ proc echoStory(n: int, story: Story) =
 proc echoStories() =
   let n = min((terminalHeight() / 4).int - 1, stories.high)
 
-  for _ in 1..n:
+  for i in 1..n:
     let next = view()
 
     # output the next story
-    echoStory(next.i + 1, next.story)
+    if finished(view):
+      if i == 1:
+        warn("No more stories; reload or sort to reset")
+    else:
+      echoStory(next.i + 1, next.story)
 
 ## Show the prompt and wait for user input
 proc prompt(): string =
@@ -145,10 +150,10 @@ proc sortStories(opts: iterator(): string) =
   echoStories()
 
 proc findStories(opts: iterator(): string) =
-  let text = opts()
+  let t = unicode.toLower(opts())
   
   # drop any stories not matching the given text
-  stories.keepIf(proc (s: Story): bool = s.title.contains(text))
+  stories.keepIf(proc (s: Story): bool = unicode.toLower(s.title).contains(t))
 
   # reset and echo
   resetView()
@@ -176,7 +181,7 @@ echoStories()
 # process user input forever
 while true:
   let it = iterator (): string =
-    for word in prompt().strip().split(Whitespace, 1):
+    for word in unicode.strip(prompt()).split(Whitespace, 1):
       yield word
       
   it.exec()
