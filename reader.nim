@@ -87,7 +87,9 @@ proc echoStory(n: int, story: Story) =
 
 ## Show the next set of stories
 proc echoStories() =
-  for i in 1..<(terminalHeight() / 4).int:
+  let n = max(1, ((terminalHeight() - 6) / 4).int)
+
+  for i in 0..<n:
     let next = view()
 
     # output the next story

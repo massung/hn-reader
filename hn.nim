@@ -111,9 +111,7 @@ proc hnGetStory*(id: int64): Future[Option[Story]] {.async.} =
   let json = await hnGet(fmt"item/{id}")
 
   # check to make sure the story downloaded
-  if json.kind == JNull:
-    return none[Story]()
-  else:
+  if json.kind != JNull:
     return some(json.Story)
 
 ## Downloads a list of stories in parallel given their IDs
