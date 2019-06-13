@@ -1,9 +1,3 @@
-# Hacker News | reader
-#
-# Copyright (c) Jeffrey Massung
-# All rights reserved.
-#
-
 import algorithm
 import asyncdispatch
 import asyncfutures

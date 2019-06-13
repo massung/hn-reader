@@ -1,10 +1,4 @@
 #!/bin/env nim c -r -d:ssl --threads:on --hints:off --app:console
-#
-# Hacker News | reader
-#
-# Copyright (c) Jeffrey Massung
-# All rights reserved.
-#
 
 import console
 import hn

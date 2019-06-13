@@ -43,3 +43,6 @@ You can reload the list of stories at any time, sort them, search for a given to
 # fin.
 
 Enjoy!
+
+[hn]:     https://news.ycombinator.com
+[nim]:    https://nim-lang.org
