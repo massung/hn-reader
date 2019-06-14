@@ -4,6 +4,7 @@ author = "Jeffrey Massung"
 description = "CLI Hacker News reader written in Nim"
 license = "BSD3"
 srcDir = "src"
+binDir = "out"
 bin = @["hnreader"]
 
 # dependencies

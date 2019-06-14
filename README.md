@@ -10,10 +10,10 @@ After cloning, assuming you have [Nim][nim] installed, compiling should be as si
 $ nimble build
 ```
 
-This will leave you with an executable `hnreader` app (`hnreader.exe` on Windows) that can then be run:
+This will leave you with an executable `hnreader` app (`hnreader.exe` on Windows) in the `out/` directory that can then be run:
 
 ```bash
-$ ./hnreader
+$ ./out/hnreader
 ```
 
 ## Usage
