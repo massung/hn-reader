@@ -7,13 +7,13 @@ A simple, [Hacker News][hn] story reader, written in [Nim][nim] for the console.
 After cloning, assuming you have [Nim][nim] installed, compiling should be as simple as running:
 
 ```bash
-$ ./build.sh  # build.cmd on Windows
+$ nimble build
 ```
 
-This will leave you with an executable `reader` app (`reader.exe` on Windows) that can then be run:
+This will leave you with an executable `hnreader` app (`hnreader.exe` on Windows) that can then be run:
 
 ```bash
-$ ./reader
+$ ./hnreader
 ```
 
 ## Usage

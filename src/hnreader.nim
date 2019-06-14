@@ -1,7 +1,4 @@
-#!/bin/env nim c -r -d:ssl --threads:on --hints:off --app:console
-
-import console
-import hn
+import reader/[console, hn]
 
 import asyncdispatch
 import algorithm
@@ -12,6 +9,7 @@ import parseopt
 import sequtils
 import strformat
 import strutils
+import sugar
 import terminal
 import unicode
 
@@ -70,17 +68,17 @@ proc downloadStories(get: Get) =
 
   # clear the progress bar
   eraseLine()
-  
+
   # sort them appropriately
   case get
   of newstories: stories.sort(bytime)
   else: stories.sort(byrank)
-  
+
   # reset and echo
   resetView()
 
 ## Output a story with a given index
-proc echoStory(n: int, story: Story) = 
+proc echoStory(n: int, story: Story) =
   echo &"{indexColor}{n:>3}. {titleColor}{story.title}"
   echo &"     {linkColor}{story.url}"
   echo &"     {statusColor}{story.postStatus}\n"
@@ -117,7 +115,7 @@ proc parseCmd[T: enum](s: string, def: T): T =
 
   # indicate that it was unknown, using something else instead
   warn(fmt"Unknown option: {s}; defaulting to {$def}")
-  
+
   return def
 
 ## Open a story to its URL link or comments page
@@ -147,11 +145,9 @@ proc sortStories(opts: iterator(): string) =
 
 proc findStories(opts: iterator(): string) =
   let terms = unicode.split(opts()).map(proc (s: string): string = unicode.toLower(s))
-  
+
   # keep stories that match any of the terms
-  stories.keepIf(proc (s: Story): bool = 
-    terms.any(proc (t: string): bool = unicode.toLower(s.title).contains(t))
-  )
+  stories.keepIf((s) => terms.any((t) => unicode.toLower(s.title).contains(t)))
 
   # reset and echo
   resetView()
@@ -181,5 +177,5 @@ while true:
   let it = iterator (): string =
     for word in unicode.strip(prompt()).split(Whitespace, 1):
       yield word
-      
+
   it.exec()

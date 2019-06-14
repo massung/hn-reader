@@ -4,7 +4,7 @@ import terminal
 when defined(windows):
   import winlean
 
-  var 
+  var
     handle = getStdHandle(STD_OUTPUT_HANDLE)
     mode = 0.DWORD
 
@@ -19,7 +19,7 @@ when defined(windows):
   # enable virtual terminal processing
   if getConsoleMode(handle, addr(mode)) != 0:
     discard setConsoleMode(handle, mode or 4)
-  
+
   # enable code page UTF-8
   discard setConsoleOutputCP(65001)
 

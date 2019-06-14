@@ -8,6 +8,7 @@ import math
 import options
 import sequtils
 import strformat
+import sugar
 import times
 
 type
@@ -68,7 +69,7 @@ proc rank*(story: Story): float64 =
     score = (story.score.float64 - 1).pow(0.8)
     age = (story.age + 2).pow(1.8)
     factor = if story.url == "": 0.4 else: 1.0
-  
+
   score * factor / age
 
 ## Open a story's URL or item URL page in the browser
@@ -78,7 +79,7 @@ proc open*(story: Story, comments: bool=false) =
       story.itemUrl
     else:
       story.url
-  
+
   # launch the external browser
   openDefaultBrowser(url)
 
@@ -94,7 +95,7 @@ proc postStatus*(story: Story): string =
       elif age < 672: fmt"{(age / 168).int} weeks"
       elif age < 8760: fmt"{(age / 672).int} months"
       else: fmt"{(age / 8760).int} years"
-    
+
   fmt"posted by {story.author} {ago} ago ({story.score} votes) - {story.comments} comments"
 
 ## Downloads and parses a JSON response from the HN API
@@ -126,10 +127,10 @@ proc hnGetStories*(get: Get, progress: proc(n, m: int) {.gcsafe.}=nil): Future[s
     # when done, update the progress
     f.callback = proc() =
       n += 1
-      
+
       if not progress.isNil:
         progress(n, futures.high + 1)
-    
+
     # create a list of all the futures
     futures.add(f)
 
@@ -142,14 +143,14 @@ proc hnGetStories*(get: Get, progress: proc(n, m: int) {.gcsafe.}=nil): Future[s
 
   # remove any dead stories (none = dead by default)
   stories.keepIf(proc(s: Option[Story]): bool = not s.map(dead).get(true))
-  
+
   # pull all the remaining stories out of the option
   return stories.map(proc(s: Option[Story]): Story = s.get())
 
 ## Sort using a sort compare enumeration
 proc sort*(stories: var openArray[Story], by: Sort=byrank) =
   case by
-  of byrank: sort(stories, proc(a, b: Story): int = cmp(b.rank(), a.rank()))
-  of bytime: sort(stories, proc(a, b: Story): int = cmp(b.time, a.time))
-  of byscore: sort(stories, proc(a, b: Story): int = cmp(b.score, a.score))
-  of bycomments: sort(stories, proc(a, b: Story): int = cmp(b.comments(), a.comments()))
+  of byrank: sort(stories, (a, b) => cmp(b.rank(), a.rank()))
+  of bytime: sort(stories, (a, b) => cmp(b.time, a.time))
+  of byscore: sort(stories, (a, b) => cmp(b.score, a.score))
+  of bycomments: sort(stories, (a, b) => cmp(b.comments(), a.comments()))

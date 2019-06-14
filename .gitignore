@@ -1,2 +1,9 @@
 .vscode/
-reader.exe
+out/
+
+# final executable
+hnreader.exe
+hnreader
+
+# source files
+!hnreader.nim*
