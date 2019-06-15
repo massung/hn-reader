@@ -33,9 +33,9 @@ type
 
 const api = "https://hacker-news.firebaseio.com/v0"
 
-proc itemUrl*(story: Story): string =
+proc itemUrl(id: int64): string =
   ## Get the HN URL for a the comments page of a story.
-  fmt"https://news.ycombinator.com/item?id={story.id}"
+  fmt"https://news.ycombinator.com/item?id={id}"
 
 proc age*(story: Story): float64 =
   ## Age of a story in hours.
@@ -53,8 +53,8 @@ proc rank*(story: Story): float64 =
 proc open*(story: Story, comments: bool=false) =
   ## Open a story's URL or item URL page in the browser.
   let url =
-    if comments:
-      story.itemUrl
+    if comments or story.url == "":
+      story.id.itemUrl
     else:
       story.url
 
@@ -91,16 +91,18 @@ proc hnGetStory*(id: int64): Future[Option[Story]] {.async.} =
 
   # check to make sure the story downloaded
   if json.kind != JNull:
-    let story = Story(
-      id: json{"id"}.getInt(),
-      author: json{"by"}.getStr(),
-      title: json{"title"}.getStr(),
-      url: json{"url"}.getStr(),
-      score: json{"score"}.getInt(),
-      time: json{"time"}.getInt(),
-      comments: json{"descendants"}.getInt(),
-      dead: json{"dead"}.getBool(),
-    )
+    let
+      id = json{"id"}.getInt()
+      story = Story(
+        id: id,
+        author: json{"by"}.getStr(),
+        title: json{"title"}.getStr(),
+        url: json{"url"}.getStr(id.itemUrl),
+        score: json{"score"}.getInt(),
+        time: json{"time"}.getInt(),
+        comments: json{"descendants"}.getInt(),
+        dead: json{"dead"}.getBool(),
+      )
 
     result = some(story)
 
