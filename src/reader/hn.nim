@@ -16,55 +16,57 @@ type
 
 type
   Get* = enum
+    ## Defines the end-point within the HN API for a list of story IDs.
     topstories, newstories, beststories, showstories, askstories
 
   Sort* = enum
+    ## How a sequence of stories should be sorted.
     byrank, bytime, byscore, bycomments
 
 const api = "https://hacker-news.firebaseio.com/v0"
 
-## Get the ID of a story
 proc id*(story: Story): int64 =
+  ## Get the ID of a story.
   story{"id"}.getInt()
 
-## URL of the HN item's comments page
 proc itemUrl*(story: Story): string =
+  ## Get the HN URL for a the comments page of a story.
   fmt"https://news.ycombinator.com/item?id={story.id}"
 
-## Get the author of a story
 proc author*(story: Story): string =
+  ## Get the author of a story.
   story{"by"}.getStr()
 
-## Get the unix timestamp when it was posted
 proc time*(story: Story): int =
+  ## Get the unix timestamp when it was posted.
   story{"time"}.getInt()
 
-## Get the number of comments for a story
 proc comments*(story: Story): int =
+  ## Get the number of comments for a story.
   story{"descendants"}.getInt()
 
-## Get the number of upvotes for a story
 proc score*(story: Story): int =
+  ## Get the number of upvotes for a story.
   story{"score"}.getInt()
 
-## Get the title of a story
 proc title*(story: Story): string =
+  ## Get the title of a story.
   story{"title"}.getStr()
 
-## Get the external URL of a story
 proc url*(story: Story): string =
+  ## Get the external URL of a story.
   story{"url"}.getStr(story.itemUrl())
 
-## True if the story has been deleted
 proc dead*(story: Story): bool =
+  ## True if the story has been deleted.
   story{"bool"}.getBool()
 
-## Age of a story in hours
 proc age*(story: Story): float64 =
+  ## Age of a story in hours.
   (now().utc.toTime().toUnix() - story.time).float64 / 3600
 
-## Page ranking of a story
 proc rank*(story: Story): float64 =
+  ## Page ranking of a story.
   let
     score = (story.score.float64 - 1).pow(0.8)
     age = (story.age + 2).pow(1.8)
@@ -72,8 +74,8 @@ proc rank*(story: Story): float64 =
 
   score * factor / age
 
-## Open a story's URL or item URL page in the browser
 proc open*(story: Story, comments: bool=false) =
+  ## Open a story's URL or item URL page in the browser.
   let url =
     if comments:
       story.itemUrl
@@ -83,8 +85,8 @@ proc open*(story: Story, comments: bool=false) =
   # launch the external browser
   openDefaultBrowser(url)
 
-## A string about who posted, when, popularity, etc.
 proc postStatus*(story: Story): string =
+  ## A string about who posted, when, popularity, etc.
   let
     age = story.age()
     ago =
@@ -98,25 +100,25 @@ proc postStatus*(story: Story): string =
 
   fmt"posted by {story.author} {ago} ago ({story.score} votes) - {story.comments} comments"
 
-## Downloads and parses a JSON response from the HN API
 proc hnGet*(path: string): Future[JsonNode] {.async.} =
+  ## Downloads and parses a JSON response from the HN API.
   let resp = newAsyncHttpClient().getContent(fmt"{api}/{path}.json")
   return parseJson(await resp)
 
-## Downloads a list of story IDs from HN
 proc hnGetStoryIds*(get: Get): Future[seq[int64]] {.async.} =
+  ## Downloads a list of story IDs from HN.
   return to(await hnGet($get), seq[int64])
 
-## Downloads and parses a single Story from HN
 proc hnGetStory*(id: int64): Future[Option[Story]] {.async.} =
+  ## Downloads and parses a single Story from HN.
   let json = await hnGet(fmt"item/{id}")
 
   # check to make sure the story downloaded
   if json.kind != JNull:
     return some(json.Story)
 
-## Downloads a list of stories in parallel given their IDs
 proc hnGetStories*(get: Get, progress: proc(n, m: int) {.gcsafe.}=nil): Future[seq[Story]] {.async.} =
+  ## Downloads a list of stories in parallel given their IDs.
   var futures = newSeq[Future[Option[Story]]]()
   var n = 0
 
@@ -147,8 +149,8 @@ proc hnGetStories*(get: Get, progress: proc(n, m: int) {.gcsafe.}=nil): Future[s
   # pull all the remaining stories out of the option
   return stories.map(proc(s: Option[Story]): Story = s.get())
 
-## Sort using a sort compare enumeration
 proc sort*(stories: var openArray[Story], by: Sort=byrank) =
+  ## Sort using a sort compare enumeration.
   case by
   of byrank: sort(stories, (a, b) => cmp(b.rank(), a.rank()))
   of bytime: sort(stories, (a, b) => cmp(b.time, a.time))
