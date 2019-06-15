@@ -16,7 +16,7 @@ import unicode
 type
   ReaderCmd = enum
     ## Possible command line actions.
-    help, load, sort, find, next, open, read, quit
+    help, load, sort, find, next, open, read, post, quit
 
 # constant colors used for the terminal
 let
@@ -41,6 +41,7 @@ proc showHelp() =
   echo "  open    [n]                         - open story url in browser"
   echo "  read    [n]                         - open comments in browser"
   echo "  next                                - list next page of stories"
+  echo "  post                                - launch browser to post page"
   echo "  help"
   echo "  quit"
 
@@ -156,6 +157,10 @@ proc findStories(opts: iterator(): string) =
   resetView()
   echoStories()
 
+proc postStory() =
+  ## Open browser to the submit page.
+  openDefaultBrowser("https://news.ycombinator.com/submit")
+
 proc exec(opts: iterator (): string) =
   ## Execute whatever comment was entered by the user.
   case parseCmd[ReaderCmd](opts(), help)
@@ -166,6 +171,7 @@ proc exec(opts: iterator (): string) =
   of open: openStory(opts, comments=false)
   of read: openStory(opts, comments=true)
   of next: echoStories()
+  of post: postStory()
   of quit: quit()
 
 #

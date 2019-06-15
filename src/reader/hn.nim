@@ -12,7 +12,15 @@ import sugar
 import times
 
 type
-  Story* = JsonNode
+  Story* = object
+    id*: int64
+    author*: string
+    time*: int
+    comments*: int
+    score*: int
+    title*: string
+    url*: string
+    dead*: bool
 
 type
   Get* = enum
@@ -25,41 +33,9 @@ type
 
 const api = "https://hacker-news.firebaseio.com/v0"
 
-proc id*(story: Story): int64 =
-  ## Get the ID of a story.
-  story{"id"}.getInt()
-
 proc itemUrl*(story: Story): string =
   ## Get the HN URL for a the comments page of a story.
   fmt"https://news.ycombinator.com/item?id={story.id}"
-
-proc author*(story: Story): string =
-  ## Get the author of a story.
-  story{"by"}.getStr()
-
-proc time*(story: Story): int =
-  ## Get the unix timestamp when it was posted.
-  story{"time"}.getInt()
-
-proc comments*(story: Story): int =
-  ## Get the number of comments for a story.
-  story{"descendants"}.getInt()
-
-proc score*(story: Story): int =
-  ## Get the number of upvotes for a story.
-  story{"score"}.getInt()
-
-proc title*(story: Story): string =
-  ## Get the title of a story.
-  story{"title"}.getStr()
-
-proc url*(story: Story): string =
-  ## Get the external URL of a story.
-  story{"url"}.getStr(story.itemUrl())
-
-proc dead*(story: Story): bool =
-  ## True if the story has been deleted.
-  story{"bool"}.getBool()
 
 proc age*(story: Story): float64 =
   ## Age of a story in hours.
@@ -115,7 +91,18 @@ proc hnGetStory*(id: int64): Future[Option[Story]] {.async.} =
 
   # check to make sure the story downloaded
   if json.kind != JNull:
-    return some(json.Story)
+    let story = Story(
+      id: json{"id"}.getInt(),
+      author: json{"by"}.getStr(),
+      title: json{"title"}.getStr(),
+      url: json{"url"}.getStr(),
+      score: json{"score"}.getInt(),
+      time: json{"time"}.getInt(),
+      comments: json{"descendants"}.getInt(),
+      dead: json{"dead"}.getBool(),
+    )
+
+    result = some(story)
 
 proc hnGetStories*(get: Get, progress: proc(n, m: int) {.gcsafe.}=nil): Future[seq[Story]] {.async.} =
   ## Downloads a list of stories in parallel given their IDs.
@@ -144,7 +131,7 @@ proc hnGetStories*(get: Get, progress: proc(n, m: int) {.gcsafe.}=nil): Future[s
   var stories = await all(futures)
 
   # remove any dead stories (none = dead by default)
-  stories.keepIf(proc(s: Option[Story]): bool = not s.map(dead).get(true))
+  stories.keepIf(proc(s: Option[Story]): bool = not s.map((s) => s.dead).get(true))
 
   # pull all the remaining stories out of the option
   return stories.map(proc(s: Option[Story]): Story = s.get())
@@ -155,4 +142,4 @@ proc sort*(stories: var openArray[Story], by: Sort=byrank) =
   of byrank: sort(stories, (a, b) => cmp(b.rank(), a.rank()))
   of bytime: sort(stories, (a, b) => cmp(b.time, a.time))
   of byscore: sort(stories, (a, b) => cmp(b.score, a.score))
-  of bycomments: sort(stories, (a, b) => cmp(b.comments(), a.comments()))
+  of bycomments: sort(stories, (a, b) => cmp(b.comments, a.comments))
