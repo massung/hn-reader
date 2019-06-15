@@ -72,6 +72,7 @@ proc downloadStories(get: Get) =
   # sort them appropriately
   case get
   of newstories: stories.sort(bytime)
+  of askstories: stories.sort(bycomments)
   else: stories.sort(byrank)
 
   # reset and echo
