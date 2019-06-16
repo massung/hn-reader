@@ -95,7 +95,7 @@ proc echoStories() =
 
     # output the next story
     if finished(view):
-      if i == 1:
+      if i == 0:
         warn("No more stories; reload or sort to reset")
     else:
       echoStory(next.i + 1, next.story)
