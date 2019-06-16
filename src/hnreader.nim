@@ -178,13 +178,14 @@ proc exec(opts: iterator (): string) =
 # Run program
 #
 
-downloadStories(topstories)
-echoStories()
+when isMainModule:
+  downloadStories(topstories)
+  echoStories()
 
-# process user input forever
-while true:
-  let it = iterator (): string =
-    for word in unicode.strip(prompt()).split(Whitespace, 1):
-      yield word
+  # process user input forever
+  while true:
+    let it = iterator (): string =
+      for word in unicode.strip(prompt()).split(Whitespace, 1):
+        yield word
 
-  it.exec()
+    it.exec()
