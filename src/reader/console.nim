@@ -17,7 +17,7 @@ when defined(windows):
     {.stdcall, dynlib: "kernel32", importc: "SetConsoleOutputCP".}
 
   # enable virtual terminal processing
-  if getConsoleMode(handle, addr(mode)) != 0:
+  if getConsoleMode(handle, mode.addr) != 0:
     discard setConsoleMode(handle, mode or 4)
 
   # enable code page UTF-8
