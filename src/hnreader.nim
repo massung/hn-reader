@@ -20,10 +20,10 @@ type
 
 # constant colors used for the terminal
 let
-  indexColor = ansiForegroundColorCode(rgb(0x33, 0x33, 0x33))
+  indexColor = ansiForegroundColorCode(rgb(0x33, 0xdd, 0xdd))
   titleColor = ansiForegroundColorCode(rgb(0xdd, 0x77, 0x33))
   linkColor = ansiForegroundColorCode(rgb(0x33, 0x33, 0xdd))
-  statusColor = ansiForegroundColorCode(rgb(0x33, 0x33, 0x33))
+  statusColor = ansiForegroundColorCode(rgb(0x77, 0x77, 0x77))
   promptColor = ansiForegroundColorCode(rgb(0x33, 0xdd, 0xdd))
   warnColor = ansiForegroundColorCode(rgb(0xdd, 0x33, 0x33))
 
