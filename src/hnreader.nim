@@ -151,11 +151,13 @@ proc sortStories(opts: iterator(): string) =
   echoStories()
 
 proc findStories(opts: iterator(): string) =
-  ## Search loaded stories for possible terms.
-  let terms = unicode.split(opts()).map(proc (s: string): string = unicode.toLower(s))
+  ## Search stories for matching terms in the title.
+  let
+    terms = unicode.split(opts()).map((s: string) => unicode.toLower(s))
+    match = (s: string) => terms.any((t: string) => s.contains(t))
 
   # keep stories that match any of the terms
-  stories.keepIf((s) => terms.any((t) => unicode.toLower(s.title).contains(t)))
+  stories.keepIf((s: Story) => match(unicode.toLower(s.title)))
 
   # reset and echo
   resetView()
