@@ -1,10 +1,7 @@
 import reader/[console, hn, story]
 
 import asyncdispatch
-import algorithm
-import browsers
 import colors
-import iup
 import options
 import sequtils
 import strformat
