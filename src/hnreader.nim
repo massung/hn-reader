@@ -1,11 +1,11 @@
-import reader/[console, hn]
+import reader/[console, hn, story]
 
 import asyncdispatch
 import algorithm
 import browsers
 import colors
+import iup
 import options
-import parseopt
 import sequtils
 import strformat
 import strutils
@@ -16,7 +16,7 @@ import unicode
 type
   ReaderCmd = enum
     ## Possible command line actions.
-    help, load, sort, find, next, open, read, post, quit
+    help, load, next, open, read, quit
 
 # constant colors used for the terminal
 let
@@ -29,19 +29,16 @@ let
 
 # global list of loaded stories and current view
 var stories: seq[Story]
-var view: iterator(): tuple[story: Story, i: int]
+var view: iterator(): int64
 
 proc showHelp() =
   ## Show usage output.
   echo "Hacker News | reader\n"
   echo "COMMANDS"
   echo "  load    [top|new|best|show|ask]     - reload stories (defaul=top)"
-  echo "  sort    [rank|time|score|comments]  - sort stories (default=rank)"
-  echo "  find    [topic]                     - search stories"
   echo "  open    [n]                         - open story url in browser"
   echo "  read    [n]                         - open comments in browser"
   echo "  next                                - list next page of stories"
-  echo "  post                                - launch browser to post page"
   echo "  help"
   echo "  quit"
 
@@ -50,35 +47,12 @@ proc warn(s: string) =
   echo &"{warnColor}{s}\n"
   resetAttributes()
 
-proc resetView() =
-  ## Reset the view into the story list.
-  view = iterator(): tuple[story: Story, i: int] =
-    for i, story in stories.pairs:
-      yield (story, i)
-
-const progressBar = '#'.repeat(50)
-
-proc showProgress(n, m: int) {.gcsafe.} =
-  ## Display a simple progress bar growing.
-  let arrow = progressBar[0..<(n * 50 / m).int]
-
-  write(stdout, &"Downloading stories from HN [{arrow:<50}] {n}/{m}\r")
-
 proc downloadStories(get: Get) =
   ## Download all stories, sort then, and reset the view.
-  stories = waitFor hnGetStories(get, progress=showProgress)
-
-  # clear the progress bar
-  eraseLine()
-
-  # sort them appropriately
-  case get
-  of newstories: stories.sort(bytime)
-  of askstories: stories.sort(bycomments)
-  else: stories.sort(byrank)
-
-  # reset and echo
-  resetView()
+  stories.setLen(0)
+  view = iterator(): int64 =
+    for id in waitFor hnGetStoryIds(get):
+      yield id
 
 proc echoStory(n: int, story: Story) =
   ## Output a story with a given index.
@@ -89,16 +63,25 @@ proc echoStory(n: int, story: Story) =
 ## Show the next set of stories
 proc echoStories() =
   let n = max(1, ((terminalHeight() - 6) / 4).int)
+  let m = len(stories)
 
+  # take the next n ids from the view
+  var ids = newSeqOfCap[int64](n)
   for i in 0..<n:
-    let next = view()
-
-    # output the next story
     if finished(view):
-      if i == 0:
-        warn("No more stories; reload or sort to reset")
-    else:
-      echoStory(next.i + 1, next.story)
+      break
+    ids.add(view())
+
+  # check for nothing more to load
+  if len(ids) == 0:
+    warn("No more stories; load to get a new list")
+
+  # download the next batch of stories
+  stories = concat(stories, waitFor hnGetStories(ids))
+
+  # output the stories to terminal
+  for i, story in stories[m..stories.high].pairs:
+    echoStory(m + i + 1, story)
 
 proc prompt(): string =
   ## Show the prompt and wait for user input.
@@ -142,42 +125,14 @@ proc loadStories(opts: iterator(): string) =
   downloadStories(get)
   echoStories()
 
-proc sortStories(opts: iterator(): string) =
-  ## Sort the stories.
-  stories.sort(parseCmd[Sort]("by" & opts(), byrank))
-
-  # reset and echo
-  resetView()
-  echoStories()
-
-proc findStories(opts: iterator(): string) =
-  ## Search stories for matching terms in the title.
-  let
-    terms = unicode.split(opts()).map((s: string) => unicode.toLower(s))
-    match = (s: string) => terms.any((t: string) => s.contains(t))
-
-  # keep stories that match any of the terms
-  stories.keepIf((s: Story) => match(unicode.toLower(s.title)))
-
-  # reset and echo
-  resetView()
-  echoStories()
-
-proc postStory() =
-  ## Open browser to the submit page.
-  openDefaultBrowser("https://news.ycombinator.com/submit")
-
 proc exec(opts: iterator (): string) =
   ## Execute whatever comment was entered by the user.
   case parseCmd[ReaderCmd](opts(), help)
   of help: showHelp()
   of load: loadStories(opts)
-  of sort: sortStories(opts)
-  of find: findStories(opts)
   of open: openStory(opts, comments=false)
   of read: openStory(opts, comments=true)
   of next: echoStories()
-  of post: postStory()
   of quit: quit()
 
 #

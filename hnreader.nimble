@@ -8,4 +8,4 @@ binDir = "out"
 bin = @["hnreader"]
 
 # dependencies
-requires "nim >= 0.20.0"
+requires "nim >= 1.2.0"
