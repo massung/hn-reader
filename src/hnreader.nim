@@ -72,6 +72,8 @@ proc echoStories() =
   # check for nothing more to load
   if len(ids) == 0:
     warn("No more stories; load to get a new list")
+  else:
+    echo &"Fetching stories...\n"
 
   # download the next batch of stories
   stories = concat(stories, waitFor hnGetStories(ids))

@@ -32,4 +32,4 @@ proc hnGetStories*(ids: seq[int64]): Future[seq[Story]] {.async.} =
   let stories = await all(ids.mapIt(it.hnGetStory))
 
   # keep only valid stories
-  return stories.filterIt(it.isSome).mapIt(it.get)
+  return stories.filterIt(it.isSome).mapIt(it.get).filterIt(not it.dead)
