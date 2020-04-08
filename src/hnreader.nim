@@ -103,34 +103,34 @@ proc parseCmd[T: enum](s: string, def: T): T =
 
   return def
 
-proc getStory(opts: iterator(): string): Option[Story] =
+proc getStory(cli: iterator(): string): Option[Story] =
   ## Return a story by index provided.
   try:
-    result = some(stories[opts().parseInt() - 1])
+    result = some(stories[cli().parseInt() - 1])
   except ValueError:
     warn("Invalid story index!")
   except IndexError:
     warn("Invalid story index!")
 
-proc openStory(opts: iterator(): string, comments: bool=false) =
+proc openStory(cli: iterator(): string, comments: bool=false) =
   ## Open a story to its URL link or comments page.
-  opts.getStory().map((s: Story) => s.open(comments=comments))
+  cli.getStory().map((s: Story) => s.open(comments=comments))
 
-proc loadStories(opts: iterator(): string) =
+proc loadStories(cli: iterator(): string) =
   ## Load stories.
-  let get = parseCmd[Get](opts(), topstories)
+  let get = parseCmd[Get](cli(), topstories)
 
   # re-download and echo stories
   downloadStories(get)
   echoStories()
 
-proc exec(opts: iterator (): string) =
+proc exec(cli: iterator (): string) =
   ## Execute whatever comment was entered by the user.
-  case parseCmd[ReaderCmd](opts(), help)
+  case parseCmd[ReaderCmd](cli(), help)
   of help: showHelp()
-  of load: loadStories(opts)
-  of open: openStory(opts, comments=false)
-  of read: openStory(opts, comments=true)
+  of load: loadStories(cli)
+  of open: openStory(cli, comments=false)
+  of read: openStory(cli, comments=true)
   of next: echoStories()
   of quit: quit()
 
